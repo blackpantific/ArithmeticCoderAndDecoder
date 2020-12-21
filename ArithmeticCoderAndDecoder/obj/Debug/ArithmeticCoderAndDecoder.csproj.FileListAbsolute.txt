@@ -1,0 +1,7 @@
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\bin\Debug\ArithmeticCoderAndDecoder.exe.config
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\bin\Debug\ArithmeticCoderAndDecoder.exe
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\bin\Debug\ArithmeticCoderAndDecoder.pdb
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\obj\Debug\ArithmeticCoderAndDecoder.csprojAssemblyReference.cache
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\obj\Debug\ArithmeticCoderAndDecoder.csproj.CoreCompileInputs.cache
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\obj\Debug\ArithmeticCoderAndDecoder.exe
+G:\Xamarin\ArithmeticCoderAndDecoder\ArithmeticCoderAndDecoder\obj\Debug\ArithmeticCoderAndDecoder.pdb
