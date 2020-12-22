@@ -36,78 +36,78 @@ namespace ArithmeticCoderAndDecoder
             FileStream fileStream;
             FileInfo fileInfo;
 
-            using (fileStream = File.OpenRead(args[0]))
-            {
-                var fileSize = fileStream.Length;
-                byte[] buffer = new byte[fileSize];
+            //using (fileStream = File.OpenRead(args[0]))
+            //{
+            //    var fileSize = fileStream.Length;
+            //    byte[] buffer = new byte[fileSize];
 
-                fileInfo = new FileInfo(args[0]);
-                fileStream.Read(buffer, 0, Convert.ToInt32(fileSize));
-                OutputFileList = new List<byte>(buffer);
+            //    fileInfo = new FileInfo(args[0]);
+            //    fileStream.Read(buffer, 0, Convert.ToInt32(fileSize));
+            //    OutputFileList = new List<byte>(buffer);
 
-            }
-
-
-            //AlphabetAndPropabilities.Add(49, 0.1);
-            //AlphabetAndPropabilities.Add(50, 0.6);
-            //AlphabetAndPropabilities.Add(51, 0.3);
-            //ArithmeticCoding(OutputFileList, Convert.ToInt32(args[1]), args[2]);
+            //}
 
 
-            ArithmeticCodeBuilder(OutputFileList, Convert.ToInt32(Convert.ToInt32(args[1])));
-
-            var Output = new List<byte>();
-            Output.Add(Convert.ToByte(Convert.ToInt32(args[1])));//добавляем размер блока, теоретически от 2 до 255
-
-            uint numOfSupersymbols = (uint)BlocksAndTheirCodeWords.Count;
-            Output.AddRange(BitConverter.GetBytes(numOfSupersymbols));//количество суперсимволов(букв алфавита)
-
-            //var r = BitConverter.ToUInt32(Output.GetRange(1, 4).ToArray(), 0);
-
-            Output.AddRange(BitConverter.GetBytes(NumberOfBlocksToDecode));//количество суперсимволов в тексте, сколько нужно декодировать
-
-            //var r = BitConverter.ToUInt32(Output.GetRange(5, 4).ToArray(), 0);
-
-            var alphabetRange = new List<byte>();
-            for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)
-            {//запись алфавита суперсимволов в список. Каждому суперсимволу в конце добавляется длина его кодового слова.
-                // У последнего суперсимвола сначала идет его длина(суперсимвола), затем сам суперсимвол и затем его кодовое слово
-                if (i + 1 == BlocksAndTheirCodeWords.Count)
-                {
-                    alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item1.Count);
-                    alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
-                    alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
-                }
-                else
-                {
-                    alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
-                    alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
-                }
-
-            }
-
-            Output.AddRange(alphabetRange);
+            ////AlphabetAndPropabilities.Add(49, 0.1);
+            ////AlphabetAndPropabilities.Add(50, 0.6);
+            ////AlphabetAndPropabilities.Add(51, 0.3);
+            ////ArithmeticCoding(OutputFileList, Convert.ToInt32(args[1]), args[2]);
 
 
-            var listOfAllArithmeticWords = new List<byte>();//склеиваем все кодовые слова вместе
-            for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)//добавляем все кодовые слов
-            {
-                listOfAllArithmeticWords.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item2);
-            }
+            //ArithmeticCodeBuilder(OutputFileList, Convert.ToInt32(Convert.ToInt32(args[1])));
 
-            listOfAllArithmeticWords.AddRange(ListBinaryToTransform);//склеиваем кодовые слова и текст из кодовых слов для трансформации в битовый массив
+            //var Output = new List<byte>();
+            //Output.Add(Convert.ToByte(Convert.ToInt32(args[1])));//добавляем размер блока, теоретически от 2 до 255
 
-            var wordsAfterConvertion = listOfAllArithmeticWords.ToBitArray(listOfAllArithmeticWords.Count);//трансформируем в BitArray
-            var byteArrayWords = wordsAfterConvertion.BitArrayToByteArray();//BitArray в массив байт
+            //uint numOfSupersymbols = (uint)BlocksAndTheirCodeWords.Count;
+            //Output.AddRange(BitConverter.GetBytes(numOfSupersymbols));//количество суперсимволов(букв алфавита)
 
-            //var reverse = byteArrayWords.ByteArrayToBitList();
+            ////var r = BitConverter.ToUInt32(Output.GetRange(1, 4).ToArray(), 0);
 
-            Output.AddRange(byteArrayWords);
+            //Output.AddRange(BitConverter.GetBytes(NumberOfBlocksToDecode));//количество суперсимволов в тексте, сколько нужно декодировать
 
-            using (FileStream fs = File.Create(args[2]))
-            {
-                fs.Write(Output.ToArray(), 0, Output.Count);
-            }
+            ////var r = BitConverter.ToUInt32(Output.GetRange(5, 4).ToArray(), 0);
+
+            //var alphabetRange = new List<byte>();
+            //for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)
+            //{//запись алфавита суперсимволов в список. Каждому суперсимволу в конце добавляется длина его кодового слова.
+            //    // У последнего суперсимвола сначала идет его длина(суперсимвола), затем сам суперсимвол и затем его кодовое слово
+            //    if (i + 1 == BlocksAndTheirCodeWords.Count)
+            //    {
+            //        alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item1.Count);
+            //        alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
+            //        alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
+            //    }
+            //    else
+            //    {
+            //        alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
+            //        alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
+            //    }
+
+            //}
+
+            //Output.AddRange(alphabetRange);
+
+
+            //var listOfAllArithmeticWords = new List<byte>();//склеиваем все кодовые слова вместе
+            //for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)//добавляем все кодовые слов
+            //{
+            //    listOfAllArithmeticWords.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item2);
+            //}
+
+            //listOfAllArithmeticWords.AddRange(ListBinaryToTransform);//склеиваем кодовые слова и текст из кодовых слов для трансформации в битовый массив
+
+            //var wordsAfterConvertion = listOfAllArithmeticWords.ToBitArray(listOfAllArithmeticWords.Count);//трансформируем в BitArray
+            //var byteArrayWords = wordsAfterConvertion.BitArrayToByteArray();//BitArray в массив байт
+
+            ////var reverse = byteArrayWords.ByteArrayToBitList();
+
+            //Output.AddRange(byteArrayWords);
+
+            //using (FileStream fs = File.Create(args[2]))
+            //{
+            //    fs.Write(Output.ToArray(), 0, Output.Count);
+            //}
 
             using (fileStream = File.OpenRead(args[2]))
             {
@@ -472,7 +472,7 @@ namespace ArithmeticCoderAndDecoder
 
             while (num > 0)
             {
-                if (binary.Length >= 64)
+                if (binary.Length >= 100)
                     return binary.ToString();
 
                 double r = num * 2;
@@ -487,9 +487,9 @@ namespace ArithmeticCoderAndDecoder
                     num = r;
                 }
             }
-            if (binary.Length < 64)
+            if (binary.Length < 100)
             {
-                char[] vs = new char[64 - binary.Length];
+                char[] vs = new char[100 - binary.Length];
                 for (int i = 0; i < vs.Length; i++)
                 {
                     vs[i] = '0';
