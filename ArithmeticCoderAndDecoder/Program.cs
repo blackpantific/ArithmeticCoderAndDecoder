@@ -51,80 +51,13 @@ namespace ArithmeticCoderAndDecoder
             //AlphabetAndPropabilities.Add(49, 0.1);
             //AlphabetAndPropabilities.Add(50, 0.6);
             //AlphabetAndPropabilities.Add(51, 0.3);
-            ArithmeticCoding(OutputFileList, Convert.ToInt32(args[1]), args[2]);
-
-            using (fileStream = File.OpenRead(args[2]))
-            {
-                var fileSize = fileStream.Length;
-                byte[] buffer = new byte[fileSize];
-
-                fileInfo = new FileInfo(args[0]);
-                fileStream.Read(buffer, 0, Convert.ToInt32(fileSize));
-                OutputFileList = new List<byte>(buffer);
-
-            }
+            //ArithmeticCoding(OutputFileList, Convert.ToInt32(args[1]), args[2]);
 
 
-            ArithmeticDecoding(OutputFileList, args[0]);
-
-
-        }
-
-        public static void ArithmeticDecoding(List<byte> InputFileList, string pathToWrite)
-        {
-            var blockSize = InputFileList[0];//размер блока суперсимвола
-            var nAlphabetSymbols = BitConverter.ToUInt32(InputFileList.GetRange(1, 4).ToArray(), 0);//количество букв(суперсимволов) в алфавите
-            var nBlocksToDecode = BitConverter.ToUInt32(InputFileList.GetRange(5, 4).ToArray(), 0);//количество блоков для декодирования
-
-            InputFileList.RemoveRange(0, 9);//удаляем первые 9 информационных символов. остается алфивит с длинами, код слова и код
-
-            for (int i = 0, j = 0; i < nAlphabetSymbols; i++)
-            {
-                if(i+1 == nAlphabetSymbols)
-                {
-                    var lastBlockLenght = InputFileList[j];
-                    var block = InputFileList.GetRange(j + 1, lastBlockLenght);
-                    Words.Add(block);
-                    var size = InputFileList[j + 1 + block.Count];
-                    LenghtOfWords.Add(size);
-                }
-                else
-                {
-                    var block = InputFileList.GetRange(j, blockSize);
-                    Words.Add(block);
-                    var size = InputFileList[j + blockSize];
-                    LenghtOfWords.Add(size);
-                    j += blockSize + 1;
-                }
-            }
-
-
-
-        }
-
-        public static List<byte> GettingArithmeticWordsFromData(List<byte> byteArray, int alphabetSize, List<byte> LenghtOfWords)
-        {
-            int index = 0;
-            CodeWords = new List<List<byte>>();
-            for (int i = 0; i < alphabetSize; i++)
-            {
-                CodeWords.Add(new List<byte>());
-                CodeWords[i].AddRange(byteArray.GetRange(index, LenghtOfWords[i]));
-                index += LenghtOfWords[i];
-            }
-
-            byteArray.RemoveRange(0, index);
-            return byteArray;
-        }
-
-
-        public static void ArithmeticCoding(List<byte> OutputFileList, int symbInBlock, string pathToWrite)
-        {
-
-            ArithmeticCodeBuilder(OutputFileList, Convert.ToInt32(symbInBlock));
+            ArithmeticCodeBuilder(OutputFileList, Convert.ToInt32(Convert.ToInt32(args[1])));
 
             var Output = new List<byte>();
-            Output.Add(Convert.ToByte(symbInBlock));//добавляем размер блока, теоретически от 2 до 255
+            Output.Add(Convert.ToByte(Convert.ToInt32(args[1])));//добавляем размер блока, теоретически от 2 до 255
 
             uint numOfSupersymbols = (uint)BlocksAndTheirCodeWords.Count;
             Output.AddRange(BitConverter.GetBytes(numOfSupersymbols));//количество суперсимволов(букв алфавита)
@@ -171,11 +104,286 @@ namespace ArithmeticCoderAndDecoder
 
             Output.AddRange(byteArrayWords);
 
-            using (FileStream fs = File.Create(pathToWrite))
+            using (FileStream fs = File.Create(args[2]))
             {
                 fs.Write(Output.ToArray(), 0, Output.Count);
             }
+
+            using (fileStream = File.OpenRead(args[2]))
+            {
+                var fileSize = fileStream.Length;
+                byte[] buffer = new byte[fileSize];
+
+                fileInfo = new FileInfo(args[0]);
+                fileStream.Read(buffer, 0, Convert.ToInt32(fileSize));
+                OutputFileList = new List<byte>(buffer);
+
+            }
+
+            var InputFileList = OutputFileList;
+            //ArithmeticDecoding(OutputFileList, args[0]);
+            var blockSize = InputFileList[0];//размер блока суперсимвола
+            var nAlphabetSymbols = BitConverter.ToUInt32(InputFileList.GetRange(1, 4).ToArray(), 0);//количество букв(суперсимволов) в алфавите
+            var nBlocksToDecode = BitConverter.ToUInt32(InputFileList.GetRange(5, 4).ToArray(), 0);//количество блоков для декодирования
+
+            InputFileList.RemoveRange(0, 9);//удаляем первые 9 информационных символов. остается алфивит с длинами, код слова и код
+
+            int j = 0;
+            for (int i = 0; i < nAlphabetSymbols; i++)
+            {
+                if (i + 1 == nAlphabetSymbols)
+                {
+                    var lastBlockLenght = InputFileList[j];
+                    var block = InputFileList.GetRange(j + 1, lastBlockLenght);
+                    Words.Add(block);
+                    j += 1 + block.Count;
+                    var size = InputFileList[j];
+                    LenghtOfWords.Add(size);
+                }
+                else
+                {
+                    var block = InputFileList.GetRange(j, blockSize);
+                    Words.Add(block);
+                    var size = InputFileList[j + blockSize];
+                    LenghtOfWords.Add(size);
+                    j += blockSize + 1;
+                }
+            }
+
+            InputFileList.RemoveRange(0, j + 1);//удаляем все что обработали, переходим к декодированию алфавитного представления и слов
+
+            InputFileList = new List<byte>(InputFileList.ByteListToBitList());
+
+            var textToDecode = GettingArithmeticWordsFromData(InputFileList, nAlphabetSymbols, LenghtOfWords);
+
+            var inputText = GettingDataFromArithmeticWords(textToDecode, nBlocksToDecode);
+
+
         }
+
+        //public static void ArithmeticDecoding(List<byte> InputFileList, string pathToWrite)
+        //{
+        //    var blockSize = InputFileList[0];//размер блока суперсимвола
+        //    var nAlphabetSymbols = BitConverter.ToUInt32(InputFileList.GetRange(1, 4).ToArray(), 0);//количество букв(суперсимволов) в алфавите
+        //    var nBlocksToDecode = BitConverter.ToUInt32(InputFileList.GetRange(5, 4).ToArray(), 0);//количество блоков для декодирования
+
+        //    InputFileList.RemoveRange(0, 9);//удаляем первые 9 информационных символов. остается алфивит с длинами, код слова и код
+
+        //    int j = 0;
+        //    for (int i = 0; i < nAlphabetSymbols; i++)
+        //    {
+        //        if (i + 1 == nAlphabetSymbols)
+        //        {
+        //            var lastBlockLenght = InputFileList[j];
+        //            var block = InputFileList.GetRange(j + 1, lastBlockLenght);
+        //            Words.Add(block);
+        //            j += 1 + block.Count;
+        //            var size = InputFileList[j];
+        //            LenghtOfWords.Add(size);
+        //        }
+        //        else
+        //        {
+        //            var block = InputFileList.GetRange(j, blockSize);
+        //            Words.Add(block);
+        //            var size = InputFileList[j + blockSize];
+        //            LenghtOfWords.Add(size);
+        //            j += blockSize + 1;
+        //        }
+        //    }
+
+        //    InputFileList.RemoveRange(0, j + 1);//удаляем все что обработали, переходим к декодированию алфавитного представления и слов
+
+        //    InputFileList = new List<byte>(InputFileList.ByteListToBitList());
+
+        //    var textToDecode = GettingArithmeticWordsFromData(InputFileList, nBlocksToDecode, LenghtOfWords);
+
+        //    var inputText = GettingDataFromArithmeticWords(textToDecode, nBlocksToDecode);
+        //}
+
+
+        public static List<byte> GettingDataFromArithmeticWords(List<byte> byteArray, uint numberOfWords)
+        {
+            List<byte> DataList = new List<byte>();
+            int iterator = 0;
+            int found = 0;
+            List<byte> newWord = new List<byte>();
+            List<int> positionsOfCoincidenceWords = new List<int>();
+
+            var longestWord = LenghtOfWords.Max();
+
+            for (int m = 0; m < byteArray.Count; m++)
+            {
+                var ret = 0;
+                if (iterator != numberOfWords)
+                {
+                    if (m + 1 + longestWord <= byteArray.Count)
+                    {
+                        newWord = byteArray.GetRange(m, longestWord);
+                    }
+                    else
+                    {
+                        var a = byteArray.Count - m;
+                        newWord = byteArray.GetRange(m, a);
+
+                    }
+
+                    for (int i = 0; i < longestWord && ret == 0; i++)//for (int i = longestWord; i > 0 || ret == 1; i--)
+                    {
+                        for (int j = 0; j < CodeWords.Count; j++)//for (int j = CodeWords.Count; j > 0; j--)
+                        {
+                            try
+                            {
+                                if (newWord.SequenceEqual(CodeWords[j]))
+                                {
+                                    DataList.AddRange(Words[j]);
+                                    iterator += 1;
+                                    ret = 1;
+                                    m += newWord.Count - 1;
+                                    newWord.Clear();
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+
+                        }
+                        if (ret == 0)
+                            newWord.RemoveAt(newWord.Count - 1);
+
+                    }
+                }
+                else
+                {
+                    break;
+                }
+
+
+            }
+
+
+            //Recursion(iterator, byteArray.Count, ref positionsOfCoincidenceWords, ref newWord, byteArray, false, 0);
+
+            return DataList;
+        }
+
+        public static void Recursion(int iterator, int count, ref List<int> positions, ref List<byte> newWord, List<byte> array, bool initialize, int found)//возвращает итератор
+        {
+            for (int i = iterator; i < count; i++)
+            {
+                newWord.Add(array[i]);
+                if (initialize == false)
+                {
+                    for (int j = 0; j < CodeWords.Count; j++)
+                    {
+
+                        var sublist = CodeWords[j].GetRange(0, i + 1);
+                        if (newWord.SequenceEqual(sublist))
+                        {
+                            positions.Add(j);
+                        }
+                        else
+                        {
+                            if (positions.Count == 1)
+                            {
+                                found = 1;
+                            }
+                            else
+                            {
+                                positions.Remove(j);
+                            }
+                        }
+
+                    }
+                    Recursion(i + 1, count, ref positions, ref newWord, array, true, 0);
+                }
+                else
+                {
+                    Recursion(i + 1, count, ref positions, ref newWord, array, true, 0);
+                }
+
+
+
+            }
+        }
+
+        public static List<byte> GettingArithmeticWordsFromData(List<byte> byteArray, uint alphabetSize, List<byte> LenghtOfWords)
+        {
+            int index = 0;
+            CodeWords = new List<List<byte>>();
+            for (int i = 0; i < alphabetSize; i++)
+            {
+                CodeWords.Add(new List<byte>());
+                CodeWords[i].AddRange(byteArray.GetRange(index, LenghtOfWords[i]));
+                index += LenghtOfWords[i];
+            }
+
+            byteArray.RemoveRange(0, index);
+            return byteArray;
+        }
+
+
+        //public static void ArithmeticCoding(List<byte> OutputFileList, int symbInBlock, string pathToWrite)
+        //{
+
+        //    ArithmeticCodeBuilder(OutputFileList, Convert.ToInt32(symbInBlock));
+
+        //    var Output = new List<byte>();
+        //    Output.Add(Convert.ToByte(symbInBlock));//добавляем размер блока, теоретически от 2 до 255
+
+        //    uint numOfSupersymbols = (uint)BlocksAndTheirCodeWords.Count;
+        //    Output.AddRange(BitConverter.GetBytes(numOfSupersymbols));//количество суперсимволов(букв алфавита)
+
+        //    //var r = BitConverter.ToUInt32(Output.GetRange(1, 4).ToArray(), 0);
+
+        //    Output.AddRange(BitConverter.GetBytes(NumberOfBlocksToDecode));//количество суперсимволов в тексте, сколько нужно декодировать
+
+        //    //var r = BitConverter.ToUInt32(Output.GetRange(5, 4).ToArray(), 0);
+
+        //    var alphabetRange = new List<byte>();
+        //    for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)
+        //    {//запись алфавита суперсимволов в список. Каждому суперсимволу в конце добавляется длина его кодового слова.
+        //        // У последнего суперсимвола сначала идет его длина(суперсимвола), затем сам суперсимвол и затем его кодовое слово
+        //        if (i + 1 == BlocksAndTheirCodeWords.Count)
+        //        {
+        //            alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item1.Count);
+        //            alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
+        //            alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
+        //        }
+        //        else
+        //        {
+        //            alphabetRange.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item1);
+        //            alphabetRange.Add((byte)BlocksAndTheirCodeWords.ElementAt(i).Value.Item2.Count);
+        //        }
+
+        //    }
+
+        //    Output.AddRange(alphabetRange);
+
+
+        //    var listOfAllArithmeticWords = new List<byte>();//склеиваем все кодовые слова вместе
+        //    for (int i = 0; i < BlocksAndTheirCodeWords.Count; i++)//добавляем все кодовые слов
+        //    {
+        //        listOfAllArithmeticWords.AddRange(BlocksAndTheirCodeWords.ElementAt(i).Value.Item2);
+        //    }
+
+        //    listOfAllArithmeticWords.AddRange(ListBinaryToTransform);//склеиваем кодовые слова и текст из кодовых слов для трансформации в битовый массив
+
+        //    var wordsAfterConvertion = listOfAllArithmeticWords.ToBitArray(listOfAllArithmeticWords.Count);//трансформируем в BitArray
+        //    var byteArrayWords = wordsAfterConvertion.BitArrayToByteArray();//BitArray в массив байт
+
+        //    //var reverse = byteArrayWords.ByteArrayToBitList();
+
+        //    Output.AddRange(byteArrayWords);
+
+        //    using (FileStream fs = File.Create(pathToWrite))
+        //    {
+        //        fs.Write(Output.ToArray(), 0, Output.Count);
+        //    }
+        //}
+
+
 
         public static void ArithmeticCodeBuilder(List<byte> OutputFileList, int nSymbolsInBlocks)//число от 1 до 255
         {
@@ -183,9 +391,9 @@ namespace ArithmeticCoderAndDecoder
             GettingAlphabetAndProbabilities(OutputFileList);
             GettingCumulativeProbability(AlphabetAndPropabilities);
 
-            for (int i = 0; i < OutputFileList.Count; i+=nSymbolsInBlocks)
+            for (int i = 0; i < OutputFileList.Count; i += nSymbolsInBlocks)
             {
-                if((i + nSymbolsInBlocks) > OutputFileList.Count)
+                if ((i + nSymbolsInBlocks) > OutputFileList.Count)
                 {
                     var list = OutputFileList.GetRange(i, OutputFileList.Count - i);
                     CreatingArithmeticWord(list);
@@ -209,6 +417,7 @@ namespace ArithmeticCoderAndDecoder
             {
                 var key = enc.GetString(ListToEncode.ToArray());
                 ListBinaryToTransform.AddRange(BlocksAndTheirCodeWords[key].Item2);
+                NumberOfBlocksToDecode += 1;
             }
             else
             {
